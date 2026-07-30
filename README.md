@@ -1,110 +1,279 @@
-# QuizApplication (Microservices-style, Java 25)
+# Quiz Application
 
-A layered Spring Boot quiz platform — matches the resume bullet:
-> *Developed a quiz platform using Spring Boot with layered architecture (Controller, Service, DAO).*
+A **RESTful Quiz Management System** developed using **Java 25**, **Spring Boot**, **Spring Data JPA**, and **PostgreSQL**. The application allows users to create quizzes, add multiple-choice questions, submit answers, calculate scores, and track quiz attempts through REST APIs.
 
-## Stack
-- **Java 25**
-- **Spring Boot 4.1.0** (Spring Framework 7 — first-class Java 25 support)
-- **PostgreSQL** for persistence
-- **Spring Data JPA** for the DAO layer
-- **Lombok** to cut boilerplate
-- **Bean Validation** on request DTOs
+---
 
-## Architecture
+## 🚀 Features
+
+- Create, retrieve, and delete quizzes
+- Add multiple-choice questions with multiple options
+- Automatic quiz evaluation and score calculation
+- Track quiz attempt history
+- Layered architecture following Spring Boot best practices
+- Bean Validation for request validation
+- Global exception handling
+- Hibernate ORM with automatic schema generation
+- RESTful APIs tested using Postman
+
+---
+
+## 🛠 Tech Stack
+
+| Technology | Version |
+|------------|----------|
+| Java | 25 |
+| Spring Boot | 4.1.0 |
+| Spring Data JPA | Latest |
+| Hibernate ORM | Latest |
+| PostgreSQL | 18 |
+| Maven | 3.9+ |
+| Lombok | Latest |
+| Bean Validation | Jakarta Validation |
+| Postman | API Testing |
+
+---
+
+# 📂 Project Structure
+
+```text
+quiz-application
+│
+├── src
+│   └── main
+│       ├── java
+│       │   └── com.quizapp
+│       │       ├── controller
+│       │       │     └── QuizController.java
+│       │       │
+│       │       ├── service
+│       │       │     ├── QuizService.java
+│       │       │     └── QuizServiceImpl.java
+│       │       │
+│       │       ├── repository
+│       │       │     ├── QuizRepository.java
+│       │       │     ├── QuestionRepository.java
+│       │       │     ├── OptionRepository.java
+│       │       │     └── QuizAttemptRepository.java
+│       │       │
+│       │       ├── entity
+│       │       │     ├── Quiz.java
+│       │       │     ├── Question.java
+│       │       │     ├── Option.java
+│       │       │     └── QuizAttempt.java
+│       │       │
+│       │       ├── dto
+│       │       │     ├── QuizRequest.java
+│       │       │     ├── QuizResponse.java
+│       │       │     ├── QuestionRequest.java
+│       │       │     ├── QuestionResponse.java
+│       │       │     ├── OptionRequest.java
+│       │       │     ├── OptionResponse.java
+│       │       │     ├── SubmitAnswersRequest.java
+│       │       │     └── QuizResultResponse.java
+│       │       │
+│       │       ├── exception
+│       │       │     ├── GlobalExceptionHandler.java
+│       │       │     └── ResourceNotFoundException.java
+│       │       │
+│       │       └── QuizApplication.java
+│       │
+│       └── resources
+│             └── application.properties
+│
+├── pom.xml
+├── README.md
+└── .gitignore
 ```
-controller/   -> REST endpoints (QuizController)
-service/      -> business logic + grading (QuizService / QuizServiceImpl)
-dao/          -> Spring Data JPA repositories
-entity/       -> JPA entities (Quiz, Question, Option, QuizAttempt)
-dto/          -> request/response payloads (keeps correct answers out of API responses)
-exception/    -> centralized error handling
+
+---
+
+# 🏗 Architecture
+
+```text
+                Client
+        (Browser / Postman)
+                  │
+                  ▼
+          REST Controller
+                  │
+                  ▼
+           Service Layer
+          (Business Logic)
+                  │
+                  ▼
+         Repository Layer
+        (Spring Data JPA)
+                  │
+                  ▼
+           Hibernate ORM
+                  │
+                  ▼
+            PostgreSQL DB
 ```
 
-## Prerequisites
-- JDK 25 installed (`java -version`)
-- Maven 3.9+
-- A running PostgreSQL instance
+---
 
-Create the database:
+# 🗄 Database Design
+
+```text
+Quiz
+------------------------
+id
+title
+description
+createdAt
+------------------------
+        │
+        │ One-to-Many
+        ▼
+
+Question
+------------------------
+id
+text
+quiz_id (FK)
+------------------------
+        │
+        │ One-to-Many
+        ▼
+
+Option
+------------------------
+id
+text
+correct
+question_id (FK)
+------------------------
+
+QuizAttempt
+------------------------
+id
+score
+totalQuestions
+submittedAt
+quiz_id (FK)
+------------------------
+```
+
+---
+
+# 🔗 API Endpoints
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/quizzes` | Create a new quiz |
+| GET | `/api/quizzes` | Retrieve all quizzes |
+| GET | `/api/quizzes/{id}` | Retrieve quiz by ID |
+| POST | `/api/quizzes/{id}/questions` | Add question to quiz |
+| POST | `/api/quizzes/{id}/submit` | Submit quiz answers |
+| GET | `/api/quizzes/{id}/attempts` | View quiz attempts |
+| DELETE | `/api/quizzes/{id}` | Delete quiz |
+
+---
+
+# ⚙️ Setup & Installation
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/<your-username>/quiz-application.git
+```
+
+## 2. Create Database
+
 ```sql
 CREATE DATABASE quizdb;
 ```
 
-Update credentials in `src/main/resources/application.properties` if needed:
+## 3. Configure Database
+
+Update `application.properties`
+
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/quizdb
 spring.datasource.username=postgres
-spring.datasource.password=postgres
+spring.datasource.password=your_password
+
+spring.jpa.hibernate.ddl-auto=update
 ```
 
-## Run
+## 4. Run Application
+
 ```bash
 mvn spring-boot:run
 ```
-The app starts on `http://localhost:8080`. Tables are auto-created via `spring.jpa.hibernate.ddl-auto=update`.
 
-## API Reference
+Application runs at
 
-### Create a quiz
-```bash
-curl -X POST http://localhost:8080/api/quizzes \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Java Basics", "description": "Core Java fundamentals"}'
+```
+http://localhost:8080
 ```
 
-### Add a question (mark exactly one option as correct)
-```bash
-curl -X POST http://localhost:8080/api/quizzes/1/questions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Which keyword is used to inherit a class in Java?",
-    "options": [
-      {"text": "extends", "correct": true},
-      {"text": "implements", "correct": false},
-      {"text": "inherits", "correct": false}
-    ]
-  }'
+---
+
+# 🧪 API Testing
+
+Example: Create Quiz
+
+**POST**
+
+```
+/api/quizzes
 ```
 
-### List all quizzes
-```bash
-curl http://localhost:8080/api/quizzes
-```
-
-### Get a quiz to take (correct answers are hidden)
-```bash
-curl http://localhost:8080/api/quizzes/1
-```
-
-### Submit answers (questionId -> chosen optionId)
-```bash
-curl -X POST http://localhost:8080/api/quizzes/1/submit \
-  -H "Content-Type: application/json" \
-  -d '{"answers": {"1": 2}}'
-```
-Response:
 ```json
 {
-  "attemptId": 1,
-  "quizId": 1,
-  "score": 1,
-  "totalQuestions": 1,
-  "percentage": 100.0
+    "title":"Java Basics",
+    "description":"Core Java Fundamentals"
 }
 ```
 
-### View past attempts for a quiz
-```bash
-curl http://localhost:8080/api/quizzes/1/attempts
+Example: Get All Quizzes
+
+```
+GET /api/quizzes
 ```
 
-### Delete a quiz
-```bash
-curl -X DELETE http://localhost:8080/api/quizzes/1
+---
+
+# 📸 Sample Response
+
+```json
+{
+    "id": 1,
+    "title": "Java Basics",
+    "description": "Core Java Fundamentals",
+    "createdAt": "2026-07-30T21:37:07",
+    "questions": []
+}
 ```
 
-## Notes
-- Exactly one option per question must be marked `correct: true`, or the API returns a 400.
-- Answer keys are never returned by `GET /api/quizzes/{id}` — `OptionResponse` omits the `correct` flag by design.
-- `QuizAttempt` records let you track score history per quiz over time.
+---
+
+# 🔮 Future Enhancements
+
+- JWT Authentication & Authorization
+- Swagger / OpenAPI Documentation
+- Docker Support
+- Unit Testing (JUnit & Mockito)
+- CI/CD using GitHub Actions
+- Pagination & Sorting
+- Search & Filtering
+- Role-Based Access Control
+
+---
+
+# 👨‍💻 Author
+
+**Deep Chakraborty**
+
+B.Tech in Information Technology
+
+Java Backend Developer
+
+GitHub: https://github.com/<your-username>
+
+---
+
+## ⭐ If you found this project useful, consider giving it a star.

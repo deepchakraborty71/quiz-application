@@ -272,8 +272,3 @@ B.Tech in Information Technology
 
 Java Backend Developer
 
-GitHub: https://github.com/<your-username>
-
----
-
-## ⭐ If you found this project useful, consider giving it a star.
